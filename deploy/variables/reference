@@ -1,0 +1,8 @@
+DATABASE_URL=postgresql://bee_user:bee_password@postgres:5432/bee_db
+POSTGRES_USER=bee_user
+POSTGRES_PASSWORD=bee_password
+POSTGRES_DB=bee_db
+PYTHONUNBUFFERED=1
+UVICORN_RELOAD=true
+API_BASE_URL=http://fastapi:5000
+API_SECRET_KEY=mysecretkey

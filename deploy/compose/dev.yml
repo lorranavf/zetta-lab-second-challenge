@@ -1,0 +1,74 @@
+services:
+  app:
+    container_name: bee-app
+    build:
+      context: ../dockerfile/fastapi
+      dockerfile: Dockerfile
+    volumes:
+      - ../../codebase/app:/app
+    env_file:
+      - ../variables/reference
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - bee
+    links:
+      - postgres
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  postgres:
+    container_name: bee-postgres
+    restart: unless-stopped
+    build:
+      context: ../dockerfile/postgres
+      dockerfile: Dockerfile
+    volumes:
+      - ../dockerfile/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres:/var/lib/postgresql/data
+    env_file:
+      - ../variables/reference
+    command: ["postgres", "-c", "listen_addresses=*"]
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "pg_isready",
+          "-U",
+          "bee_user",
+          "-d",
+          "bee_db",
+          "-h",
+          "localhost",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - bee
+
+  nginx:
+    container_name: bee-nginx
+    restart: unless-stopped
+    build:
+      context: ../dockerfile/nginx
+      dockerfile: Dockerfile
+    ports:
+      - "8000:443"
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - bee
+
+volumes:
+  postgres:
+
+networks:
+  bee:
+    driver: bridge
