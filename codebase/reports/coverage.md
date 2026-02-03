@@ -1,0 +1,26 @@
+| Name                           |    Stmts |     Miss |    Cover |
+|------------------------------- | -------: | -------: | -------: |
+| app/\_\_init\_\_.py            |        0 |        0 |     100% |
+| app/app.py                     |       13 |        0 |     100% |
+| app/clients/\_\_init\_\_.py    |        0 |        0 |     100% |
+| app/clients/database.py        |       31 |        0 |     100% |
+| app/crud/\_\_init\_\_.py       |        4 |        0 |     100% |
+| app/crud/crud\_project.py      |        4 |        0 |     100% |
+| app/crud/crud\_task.py         |        4 |        0 |     100% |
+| app/crud/crud\_user.py         |        4 |        0 |     100% |
+| app/crud/default.py            |       41 |        0 |     100% |
+| app/models/\_\_init\_\_.py     |        4 |        0 |     100% |
+| app/models/project.py          |       24 |        0 |     100% |
+| app/models/task.py             |       24 |        0 |     100% |
+| app/models/user.py             |       16 |        0 |     100% |
+| app/routes/\_\_init\_\_.py     |       11 |        0 |     100% |
+| app/routes/home.py             |        5 |        0 |     100% |
+| app/routes/project\_routes.py  |       33 |        0 |     100% |
+| app/routes/task\_routes.py     |       28 |        0 |     100% |
+| app/routes/user\_routes.py     |       38 |        0 |     100% |
+| app/schemas/\_\_init\_\_.py    |        4 |        0 |     100% |
+| app/schemas/default.py         |        6 |        0 |     100% |
+| app/schemas/project\_schema.py |       21 |        0 |     100% |
+| app/schemas/task\_schema.py    |       23 |        0 |     100% |
+| app/schemas/user\_schema.py    |       24 |        0 |     100% |
+| **TOTAL**                      |  **362** |    **0** | **100%** |

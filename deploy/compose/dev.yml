@@ -5,7 +5,7 @@ services:
       context: ../dockerfile/fastapi
       dockerfile: Dockerfile
     volumes:
-      - ../../codebase/app:/app
+      - ../../codebase/app:/app/app
     env_file:
       - ../variables/reference
     depends_on:

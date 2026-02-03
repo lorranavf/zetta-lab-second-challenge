@@ -7,7 +7,7 @@ from sqlalchemy import Column, String, ForeignKey, DateTime
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
-from clients.database import PostgresClient
+from app.clients.database import PostgresClient
 
 Base = PostgresClient.base()
 

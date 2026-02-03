@@ -4,20 +4,20 @@ from sqlalchemy.orm import Session
 
 import uuid as uid
 
-import crud, schemas
+from app import crud, schemas
 
-from clients.database import PostgresClient
+from app.clients.database import PostgresClient
 
 router = APIRouter()
 
 
-@router.post("/project", response_model=schemas.ProjectRead, status_code=status.HTTP_201_CREATED)
+@router.post("/projects", response_model=schemas.ProjectRead, status_code=status.HTTP_201_CREATED)
 async def create_project(project: schemas.ProjectCreate, db: Session = Depends(PostgresClient.db)):
     new_project = crud.project.create(db, project)
     return new_project
 
 
-@router.get("/project/{project_id}", response_model=schemas.ProjectRead, status_code=status.HTTP_200_OK)
+@router.get("/projects/{project_id}", response_model=schemas.ProjectRead, status_code=status.HTTP_200_OK)
 async def read_project(project_id: uid.UUID, db: Session = Depends(PostgresClient.db)):
     project = crud.project.read(db, project_id)
     if not project:
@@ -25,7 +25,7 @@ async def read_project(project_id: uid.UUID, db: Session = Depends(PostgresClien
     return project
 
 
-@router.put("/project/{project_id}", response_model=schemas.ProjectRead, status_code=status.HTTP_200_OK)
+@router.put("/projects/{project_id}", response_model=schemas.ProjectRead, status_code=status.HTTP_200_OK)
 async def update_project(project_id: uid.UUID, project_update: schemas.ProjectUpdate, db: Session = Depends(PostgresClient.db)):
     project = crud.project.update(db, project_id, project_update)
     if not project:
@@ -33,7 +33,7 @@ async def update_project(project_id: uid.UUID, project_update: schemas.ProjectUp
     return project
 
 
-@router.delete("/project/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/projects/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_project(project_id: uid.UUID, db: Session = Depends(PostgresClient.db)):
     success = crud.project.delete(db, project_id)
     if not success:
@@ -41,7 +41,8 @@ async def delete_project(project_id: uid.UUID, db: Session = Depends(PostgresCli
     return None 
 
 
-@router.get("/project/{project_id}/tasks", response_model=list[schemas.TaskRead], status_code=status.HTTP_200_OK)
-async def list_tasks_by_project_id(project_id: uid.UUID, db: Session = Depends(PostgresClient.db)):
-    tasks = crud.task.list_by_foreign_key(db, "project_id", project_id)
-    return tasks
+@router.get("/projects/{project_id}/tasks", response_model=schemas.TaskPagination, status_code=status.HTTP_200_OK)
+async def list_tasks_by_project_id(project_id: uid.UUID, skip: int = 0, limit: int = 100, db: Session = Depends(PostgresClient.db)):
+    tasks = crud.task.list_by_foreign_key(db, "project_id", project_id, skip=skip, limit=limit)
+    count = crud.task.count_by_foreign_key(db, "project_id", project_id)
+    return {"total": count, "items": tasks}

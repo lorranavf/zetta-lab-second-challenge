@@ -2,9 +2,9 @@ from fastapi import FastAPI
 
 from contextlib import asynccontextmanager
 
-from routes import router
+from app.routes import router
 
-from clients.database import PostgresClient
+from app.clients.database import PostgresClient
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

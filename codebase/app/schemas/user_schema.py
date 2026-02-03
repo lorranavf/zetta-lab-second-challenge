@@ -3,7 +3,9 @@ import uuid
 
 from pydantic import BaseModel, ConfigDict
 
-from typing import Optional
+from typing import List, Optional
+
+from .default import PaginatedResponse
 
 class UserCreate(BaseModel):
 
@@ -27,12 +29,6 @@ class UserUpdate(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-class UserDelete(BaseModel):
-
-    id: uuid.UUID
-
-    model_config = ConfigDict(from_attributes=True)
-
 class UserLogin(BaseModel):
 
     email: str
@@ -40,6 +36,6 @@ class UserLogin(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-
+class UserPagination(PaginatedResponse[UserRead]):
+    pass
 

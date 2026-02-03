@@ -1,0 +1,9 @@
+DATABASE_URL=postgresql://test_user:test_password@db-tests:5432/test_db
+POSTGRES_USER=test_user
+POSTGRES_PASSWORD=test_password
+POSTGRES_DB=test_db
+PYTHONUNBUFFERED=1
+UVICORN_RELOAD=true
+API_BASE_URL=http://fastapi:5000
+API_SECRET_KEY=mysecretkey
+ENV=testing

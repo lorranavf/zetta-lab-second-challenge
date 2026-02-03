@@ -7,6 +7,8 @@ from pydantic import BaseModel, ConfigDict
 
 from typing import Optional
 
+from .default import PaginatedResponse
+
 
 class TaskCreate(BaseModel):
 
@@ -33,15 +35,9 @@ class TaskUpdate(BaseModel):
     due_date: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
-    
-
-class TaskDelete(BaseModel):
-
-    id: uuid.UUID
-
-    model_config = ConfigDict(from_attributes=True)
 
 
-
+class TaskPagination(PaginatedResponse[TaskRead]):
+    pass
 
 

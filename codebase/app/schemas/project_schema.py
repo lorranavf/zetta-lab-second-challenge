@@ -7,6 +7,8 @@ from pydantic import BaseModel, ConfigDict
 
 from typing import Optional
 
+from .default import PaginatedResponse
+
 class ProjectCreate(BaseModel):
 
     title: str
@@ -31,13 +33,8 @@ class ProjectUpdate(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-class ProjectDelete(BaseModel):
 
-    id: uuid.UUID
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-
+class ProjectPagination(PaginatedResponse[ProjectRead]):
+    pass
 
 

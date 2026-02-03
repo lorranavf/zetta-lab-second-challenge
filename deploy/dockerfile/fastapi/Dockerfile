@@ -6,8 +6,14 @@ ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 
 COPY requirements.txt .
+COPY requirements-test.txt .  
 
-RUN pip install --no-cache-dir -r requirements.txt
+ARG INSTALL_TEST=false
+
+RUN pip install --no-cache-dir -r requirements.txt && \
+    if [ "$INSTALL_TEST" = "true" ] ; then \
+    pip install --no-cache-dir -r requirements-test.txt ; \
+    fi
 
 ARG UID=1000
 
@@ -29,4 +35,4 @@ WORKDIR /app
 
 EXPOSE 5000
 
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "5000"]
+CMD ["uvicorn", "app.app:app", "--host", "0.0.0.0", "--port", "5000"]
