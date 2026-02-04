@@ -17,6 +17,7 @@ dev-rm:
 	docker compose -p bee-dev -f deploy/compose/dev.yml down --rmi all -v
 	make clean
 
+
 test-build:
 	docker compose -p bee-test -f deploy/compose/test.yml build --build-arg INSTALL_TEST=true
 

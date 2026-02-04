@@ -23,10 +23,10 @@
 | app/routes/user\_routes.py     |       43 |        0 |     100% |
 | app/schemas/\_\_init\_\_.py    |        5 |        0 |     100% |
 | app/schemas/default.py         |        6 |        0 |     100% |
-| app/schemas/project\_schema.py |       26 |        0 |     100% |
+| app/schemas/project\_schema.py |       27 |        0 |     100% |
 | app/schemas/task\_schema.py    |       31 |        0 |     100% |
 | app/schemas/token\_schema.py   |        6 |        0 |     100% |
-| app/schemas/user\_schema.py    |       24 |        0 |     100% |
+| app/schemas/user\_schema.py    |       26 |        0 |     100% |
 | app/services/authentication.py |       35 |        0 |     100% |
 | app/services/security.py       |       24 |        0 |     100% |
-| **TOTAL**                      |  **526** |    **0** | **100%** |
+| **TOTAL**                      |  **529** |    **0** | **100%** |
