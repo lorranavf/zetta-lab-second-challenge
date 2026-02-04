@@ -14,8 +14,15 @@ router = APIRouter()
     "/users", response_model=schemas.UserRead, status_code=status.HTTP_201_CREATED
 )
 async def create_user(
-    user: schemas.UserCreate, db: Session = Depends(PostgresClient.db)
+    user: schemas.UserCreate,
+    db: Session = Depends(PostgresClient.db),
+    current_user: schemas.UserRead = Depends(AuthService.get_current_user),
 ):
+    if current_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Authenticated users cannot create new users.",
+        )
     new_user = crud.user.create(db, user)
     return new_user
 
