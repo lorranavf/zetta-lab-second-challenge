@@ -9,6 +9,10 @@ dev-stop:
 
 dev-restart: dev-stop dev-build dev-start
 
+dev-restart-service:
+	docker compose -p bee-dev -f deploy/compose/dev.yml build --no-cache $(SERVICE)
+	docker compose -p bee-dev -f deploy/compose/dev.yml restart $(SERVICE)
+
 dev-rm:
 	docker compose -p bee-dev -f deploy/compose/dev.yml down --rmi all -v 
 

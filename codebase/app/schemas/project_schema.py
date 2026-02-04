@@ -13,12 +13,14 @@ class ProjectCreate(BaseModel):
 
     title: str
     description: str
-    user_id: uuid.UUID
 
 
 class ProjectRead(BaseModel):
 
     id: uuid.UUID
+    user_id: uuid.UUID
+    title: str
+    description: str
 
     model_config = ConfigDict(from_attributes=True)
 

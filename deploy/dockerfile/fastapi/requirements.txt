@@ -6,3 +6,6 @@ psycopg2-binary==2.9.10
 python-dotenv==1.2.1
 celery==5.2.7
 redis==5.2.1
+passlib==1.7.4
+python-jose==3.5.0
+python-multipart==0.0.22

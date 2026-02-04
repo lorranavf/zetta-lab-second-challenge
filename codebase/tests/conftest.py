@@ -6,6 +6,8 @@ from sqlalchemy.orm import sessionmaker
 
 from app.app import app  
 from app.clients.database import PostgresClient
+from app.services.security import SecurityService 
+
 
 URL = os.getenv("DATABASE_URL")
 
@@ -55,6 +57,16 @@ def user(client):
     return response.json()
 
 @pytest.fixture(scope="function")
+def another_user(client):
+    response = client.post('/users', json={
+        'firstname': 'another',
+        'lastname': 'user',
+        'email': 'anotheruser@example.com',
+        'password': 'securepassword'
+    })
+    return response.json()
+
+@pytest.fixture(scope="function")
 def project(client, user):
     response = client.post('/projects', json={
         'title': 'Test Project',
@@ -71,3 +83,26 @@ def task(client, project):
         'project_id': project['id']
     })
     return response.json()
+
+
+
+@pytest.fixture(scope="function")
+def user_token(user):
+    access_token = SecurityService.create_access_token(data={"sub": user["id"]})
+    return access_token
+
+
+@pytest.fixture(scope="function")
+def auth_client(client, user_token):
+    client.headers = {
+        **client.headers,
+        "Authorization": f"Bearer {user_token}"
+    }
+    return client
+
+@pytest.fixture(scope="function")
+def user_credentials():
+    return {
+        'email': 'testuser@example.com',
+        'password': 'securepassword'
+    }
