@@ -12,6 +12,7 @@ from app.services.security import SecurityService
 
 class AuthenticationService:
     AUTH_SCHEME = OAuth2PasswordBearer(tokenUrl="login")
+    AUTH_SCHEME_OPTIONAL = OAuth2PasswordBearer(tokenUrl="login", auto_error=False)
 
     @classmethod
     def credentials_exception(cls):
@@ -40,3 +41,16 @@ class AuthenticationService:
             return user
         except JWTError:
             raise cls.credentials_exception() from None
+
+    @classmethod
+    async def get_current_user_optional(
+        cls,
+        token: str | None = Depends(AUTH_SCHEME_OPTIONAL),
+        db: Session = Depends(PostgresClient.db),
+    ):
+        if not token:
+            return None
+        try:
+            return await cls.get_current_user(token, db)
+        except Exception:
+            return None

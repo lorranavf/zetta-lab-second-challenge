@@ -37,16 +37,28 @@ class GenericCRUD[ModelType, CreateSchemaType: BaseModel, UpdateSchemaType: Base
             return query.filter(self.model.user_id == current_user.id)
         return query
 
+    def apply_filters(self, query: Any, **filters) -> Any:
+        for attr, value in filters.items():
+            if value is not None and hasattr(self.model, attr):
+                query = query.filter(getattr(self.model, attr) == value)
+        return query
+
     def read(self, db: Session, id: Any, current_user: Any = None) -> ModelType | None:
         query = db.query(self.model).filter(self.model.id == id)
         query = self.validate_query(query, current_user)
         return query.first()
 
     def list(
-        self, db: Session, skip: int = 0, limit: int = 100, current_user: Any = None
+        self,
+        db: Session,
+        skip: int = 0,
+        limit: int = 100,
+        current_user: Any = None,
+        **filters,
     ) -> list[ModelType] | None:
         query = db.query(self.model)
         query = self.validate_query(query, current_user)
+        query = self.apply_filters(query, **filters)
         return query.offset(skip).limit(limit).all()
 
     def list_by_foreign_key(
@@ -57,21 +69,30 @@ class GenericCRUD[ModelType, CreateSchemaType: BaseModel, UpdateSchemaType: Base
         skip: int = 0,
         limit: int = 100,
         current_user: Any = None,
+        **filters,
     ) -> builtins.list[ModelType] | None:
         query = db.query(self.model).filter(getattr(self.model, fk_name) == fk_value)
         query = self.validate_query(query, current_user)
+        query = self.apply_filters(query, **filters)
         return query.offset(skip).limit(limit).all()
 
-    def count(self, db: Session, current_user: Any = None) -> int:
+    def count(self, db: Session, current_user: Any = None, **filters) -> int:
         query = db.query(self.model)
         query = self.validate_query(query, current_user)
+        query = self.apply_filters(query, **filters)
         return query.count()
 
     def count_by_foreign_key(
-        self, db: Session, fk_name: str, fk_value: Any, current_user: Any = None
+        self,
+        db: Session,
+        fk_name: str,
+        fk_value: Any,
+        current_user: Any = None,
+        **filters,
     ) -> int:
         query = db.query(self.model).filter(getattr(self.model, fk_name) == fk_value)
         query = self.validate_query(query, current_user)
+        query = self.apply_filters(query, **filters)
         return query.count()
 
     def before_create(self, data: dict) -> dict:

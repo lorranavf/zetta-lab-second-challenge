@@ -1,4 +1,5 @@
 import os
+import uuid
 
 import pytest
 from fastapi.testclient import TestClient
@@ -61,8 +62,12 @@ def user(client):
             "email": "testuser@example.com",
             "password": "securepassword",
         },
+        headers={},
     )
-    return response.json()
+    data = response.json()
+    if "id" not in data:
+        pytest.fail(f"Falha ao criar usuário de teste: {data}")
+    return data
 
 
 @pytest.fixture(scope="function")
@@ -72,11 +77,15 @@ def another_user(client):
         json={
             "firstname": "another",
             "lastname": "user",
-            "email": "anotheruser@example.com",
+            "email": f"another_{uuid.uuid4().hex[:6]}@example.com",
             "password": "securepassword",
         },
+        headers={},
     )
-    return response.json()
+    data = response.json()
+    if "id" not in data:
+        pytest.fail(f"Falha ao criar usuário de teste: {data}")
+    return data
 
 
 @pytest.fixture(scope="function")

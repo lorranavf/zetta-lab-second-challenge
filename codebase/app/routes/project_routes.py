@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app import crud, schemas
 from app.clients.database import PostgresClient
+from app.core.task import TaskStatus
 from app.services.authentication import AuthenticationService as AuthService
 
 router = APIRouter()
@@ -82,13 +83,23 @@ async def list_tasks_by_project_id(
     project_id: uid.UUID,
     skip: int = 0,
     limit: int = 100,
+    status: TaskStatus | None = None,
     db: Session = Depends(PostgresClient.db),
     current_user: schemas.UserRead = Depends(AuthService.get_current_user),
 ):
+    filters = {
+        "status": status,
+    }
     tasks = crud.task.list_by_foreign_key(
-        db, "project_id", project_id, skip=skip, limit=limit, current_user=current_user
+        db,
+        "project_id",
+        project_id,
+        skip=skip,
+        limit=limit,
+        current_user=current_user,
+        **filters,
     )
     count = crud.task.count_by_foreign_key(
-        db, "project_id", project_id, current_user=current_user
+        db, "project_id", project_id, current_user=current_user, **filters
     )
     return {"total": count, "items": tasks}

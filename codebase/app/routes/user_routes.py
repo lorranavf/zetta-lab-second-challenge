@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app import crud, schemas
 from app.clients.database import PostgresClient
+from app.core.project import ProjectStatus
 from app.services.authentication import AuthenticationService as AuthService
 
 router = APIRouter()
@@ -16,7 +17,9 @@ router = APIRouter()
 async def create_user(
     user: schemas.UserCreate,
     db: Session = Depends(PostgresClient.db),
-    current_user: schemas.UserRead = Depends(AuthService.get_current_user),
+    current_user: schemas.UserRead | None = Depends(
+        AuthService.get_current_user_optional
+    ),
 ):
     if current_user:
         raise HTTPException(
@@ -97,13 +100,23 @@ async def list_projects_by_user_id(
     user_id: uid.UUID,
     skip: int = 0,
     limit: int = 100,
+    status: ProjectStatus | None = None,
     db: Session = Depends(PostgresClient.db),
     current_user: schemas.UserRead = Depends(AuthService.get_current_user),
 ):
+    filters = {
+        "status": status,
+    }
     projects = crud.project.list_by_foreign_key(
-        db, "user_id", user_id, skip=skip, limit=limit, current_user=current_user
+        db,
+        "user_id",
+        user_id,
+        skip=skip,
+        limit=limit,
+        current_user=current_user,
+        **filters,
     )
     count = crud.project.count_by_foreign_key(
-        db, "user_id", user_id, current_user=current_user
+        db, "user_id", user_id, current_user=current_user, **filters
     )
     return {"total": count, "items": projects}

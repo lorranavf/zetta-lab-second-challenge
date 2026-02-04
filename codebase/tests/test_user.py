@@ -5,6 +5,19 @@ def test_create_user(user):
     assert "id" in user
 
 
+def test_create_user_authenticated(auth_client):
+    response = auth_client.post(
+        "/users",
+        json={
+            "firstname": "Auth",
+            "lastname": "User",
+            "email": "auth.user@example.com",
+            "password": "authpassword123",
+        },
+    )
+    assert response.status_code == 400
+
+
 def test_read_user(auth_client, user):
     user_id = user["id"]
     response = auth_client.get(f"/users/{user_id}")
@@ -53,6 +66,16 @@ def test_list_projects_by_user_id(auth_client, user):
     assert data["total"] == 0
 
 
+def test_filter_projects_by_status(auth_client, user):
+    user_id = user["id"]
+    response = auth_client.get(f"/users/{user_id}/projects?status=active")
+    assert response.status_code == 200
+    data = response.json()
+    assert "total" in data
+    assert "items" in data
+    assert isinstance(data["items"], list)
+
+
 def test_read_nonexistent_user(auth_client):
     response = auth_client.get("/users/00000000-0000-0000-0000-000000000000")
     assert response.status_code == 404
@@ -97,15 +120,32 @@ def test_user_crud_hashes_password_manually(db_session):
     )
 
 
-def test_user_trying_to_update_another_user(auth_client, another_user):
-    user_id = another_user["id"]
+def test_user_trying_to_update_another_user(another_user, auth_client):
+    assert another_user is not None
+    assert "id" in another_user
+
     response = auth_client.put(
-        f"/users/{user_id}",
+        f"/users/{another_user['id']}",
         json={
-            "firstname": "Other",
-            "lastname": "User",
-            "email": "other.user@example.com",
-            "password": "otherpassword123",
+            "firstname": "Hacker",
         },
     )
     assert response.status_code == 404
+
+
+def test_create_user_with_invalid_token(client):
+    headers = {"Authorization": "Bearer token_completamente_invalido"}
+
+    response = client.post(
+        "/users",
+        json={
+            "firstname": "Token",
+            "lastname": "Invalido",
+            "email": "token_invalido@example.com",
+            "password": "password123",
+        },
+        headers=headers,
+    )
+
+    assert response.status_code == 201
+    assert "id" in response.json()

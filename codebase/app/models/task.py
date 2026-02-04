@@ -1,20 +1,14 @@
 import uuid
 from datetime import datetime
-from enum import Enum
 
 from sqlalchemy import Column, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from app.clients.database import PostgresClient
+from app.core.task import TaskStatus
 
 Base = PostgresClient.base()
-
-
-class TaskStatus(Enum):
-    ACTIVE = "active"
-    COMPLETED = "completed"
-    ARCHIVED = "archived"
 
 
 class Task(Base):

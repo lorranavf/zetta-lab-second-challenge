@@ -16,6 +16,10 @@ class ProjectRead(BaseModel):
     user_id: uuid.UUID
     title: str
     description: str
+    status: str
+    created_at: datetime
+    completed_at: datetime | None = None
+    archived_at: datetime | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
