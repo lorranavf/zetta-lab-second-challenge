@@ -16,12 +16,13 @@ services:
   app-tests:
     container_name: app-tests
     build:
-      context: ../dockerfile/fastapi
-      dockerfile: Dockerfile
+      context: ../../
+      dockerfile: deploy/dockerfile/fastapi/Dockerfile
       args:
         - INSTALL_TEST=true
     volumes:
-      - ../../codebase:/app
+      - ../../codebase/app:/app/app
+      - ../../codebase/tests:/app/tests
     env_file:
       - ../variables/test
     depends_on:
@@ -29,11 +30,11 @@ services:
     networks:
       - test-network
     command: >
-      pytest
-      --cov=app 
-      --cov-report=term-missing 
-      --cov-report=markdown:reports/coverage.md
-      tests/
+      uv run --no-sync pytest
+      --cov=app
+      --cov-report=term-missing
+      --cov-report=markdown:/app/tests/tests_coverage.md
+      /app/tests/
 
 networks:
   test-network:

@@ -1,7 +1,7 @@
-from .user_schema import UserCreate, UserUpdate, UserRead, UserLogin, UserPagination
-from .project_schema import ProjectCreate, ProjectUpdate, ProjectRead, ProjectPagination
-from .task_schema import TaskCreate, TaskUpdate, TaskRead, TaskPagination
+from .project_schema import ProjectCreate, ProjectPagination, ProjectRead, ProjectUpdate
+from .task_schema import TaskCreate, TaskPagination, TaskRead, TaskUpdate
 from .token_schema import Token, TokenData
+from .user_schema import UserCreate, UserLogin, UserPagination, UserRead, UserUpdate
 
 __all__ = [
     "UserCreate",

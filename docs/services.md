@@ -8,10 +8,10 @@ sequenceDiagram
     participant Postgres
 
     %% User Request (Summary)
-    
+
     note over Client: User Request
-    alt  
-    Client->>Nginx: HTTP request 
+    alt
+    Client->>Nginx: HTTP request
     Nginx->>Frontend: Asset Request
     Nginx->>Backend: API Request
     critical
@@ -27,7 +27,7 @@ sequenceDiagram
     alt
     note over Backend: Cache Hit
     alt
-    
+
     Nginx->>Backend: GET Request
     critical
     Backend->>Backend: Authentication
@@ -59,7 +59,7 @@ sequenceDiagram
     Backend->>Postgres: INSERT/UPDATE/DELETE
     Postgres->>Backend: OK
     Backend->>Redis: DEL cache:resource:{id} or SET cache:resource:{id} TTL 60s
-    Backend->>Nginx: 201    
+    Backend->>Nginx: 201
     end
     end
 

@@ -1,9 +1,8 @@
 import uuid
-
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 
-from sqlalchemy import Column, String, ForeignKey, DateTime
+from sqlalchemy import Column, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -11,13 +10,14 @@ from app.clients.database import PostgresClient
 
 Base = PostgresClient.base()
 
-class ProjectStatus(str, Enum):
+
+class ProjectStatus(StrEnum):
     ACTIVE = "active"
     COMPLETED = "completed"
     ARCHIVED = "archived"
 
-class Project(Base):
 
+class Project(Base):
     __tablename__ = "projects"
 
     id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
@@ -28,7 +28,7 @@ class Project(Base):
     completed_at = Column(DateTime, nullable=True)
     archived_at = Column(DateTime, nullable=True)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
-    
+
     # relationships
     user = relationship("User", back_populates="projects")
     tasks = relationship("Task", back_populates="project")

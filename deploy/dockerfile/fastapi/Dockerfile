@@ -1,37 +1,34 @@
 FROM python:3.12-slim
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
+ENV PYTHONPATH=/app \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    UV_CACHE_DIR=/app/.cache/uv \
+    UV_LINK_MODE=copy
 
-ENV PYTHONPATH=/app
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
+WORKDIR /app
 
-COPY requirements.txt .
-COPY requirements-test.txt .  
+RUN adduser --disabled-password --gecos "" --home "/app" --shell "/sbin/nologin" --no-create-home --uid 1000 app
+RUN mkdir -p /app/.cache/uv && chown -R app:app /app
+
+COPY pyproject.toml uv.lock ./
+
+RUN --mount=type=cache,target=/app/.cache/uv \
+    uv sync --frozen --no-install-project --no-dev --extra api
 
 ARG INSTALL_TEST=false
 
-RUN pip install --no-cache-dir -r requirements.txt && \
+RUN --mount=type=cache,target=/app/.cache/uv \
     if [ "$INSTALL_TEST" = "true" ] ; then \
-    pip install --no-cache-dir -r requirements-test.txt ; \
+    uv sync --frozen --no-install-project --all-extras; \
     fi
 
-ARG UID=1000
-
-RUN adduser \
-    --disabled-password \
-    --gecos "" \
-    --home "/nonexistent" \
-    --shell "/sbin/nologin" \
-    --no-create-home \
-    --uid "${UID}" \
-    app
-
-RUN mkdir -p /app && \
-    chown -R app:app /app
+RUN chown -R app:app /app
 
 USER app
 
-WORKDIR /app
+ENV PATH="/app/.venv/bin:$PATH"
 
 EXPOSE 5000
 

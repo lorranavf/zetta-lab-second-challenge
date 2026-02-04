@@ -1,16 +1,16 @@
+from uuid import UUID
 
-from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
-from app.services.security import SecurityService
+from sqlalchemy.orm import Session
+
 from app import crud
 from app.clients.database import PostgresClient
+from app.services.security import SecurityService
 
-from uuid import UUID
 
 class AuthenticationService:
-
     AUTH_SCHEME = OAuth2PasswordBearer(tokenUrl="login")
 
     @classmethod
@@ -22,9 +22,15 @@ class AuthenticationService:
         )
 
     @classmethod
-    async def get_current_user(cls, token: str = Depends(AUTH_SCHEME), db: Session = Depends(PostgresClient.db)):
+    async def get_current_user(
+        cls, token: str = Depends(AUTH_SCHEME), db: Session = Depends(PostgresClient.db)
+    ):
         try:
-            payload = jwt.decode(token, SecurityService.SECRET_KEY, algorithms=[SecurityService.ALGORITHM])
+            payload = jwt.decode(
+                token,
+                SecurityService.SECRET_KEY,
+                algorithms=[SecurityService.ALGORITHM],
+            )
             user_id: str = payload.get("sub")
             if user_id is None:
                 raise cls.credentials_exception()
@@ -33,9 +39,4 @@ class AuthenticationService:
                 raise cls.credentials_exception()
             return user
         except JWTError:
-            raise cls.credentials_exception()
-        
-    
-    
-
-    
+            raise cls.credentials_exception() from None

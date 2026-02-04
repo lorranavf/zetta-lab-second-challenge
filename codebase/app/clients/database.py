@@ -1,18 +1,13 @@
 import os
 
 from dotenv import load_dotenv
-
 from sqlalchemy import create_engine
-
-from sqlalchemy.orm import declarative_base
-
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import declarative_base, sessionmaker
 
 load_dotenv(encoding="utf-8")
 
 
 class PostgresClient:
-
     _engine = None
     _session = None
     _base = None
@@ -20,8 +15,12 @@ class PostgresClient:
     @classmethod
     def initialize(cls):
         if cls._engine is None:
-            cls._engine = create_engine(os.getenv("DATABASE_URL"), connect_args={"client_encoding": "utf8"})
-            cls._session = sessionmaker(autocommit=False, autoflush=False, bind=cls._engine)
+            cls._engine = create_engine(
+                os.getenv("DATABASE_URL"), connect_args={"client_encoding": "utf8"}
+            )
+            cls._session = sessionmaker(
+                autocommit=False, autoflush=False, bind=cls._engine
+            )
             cls._base = declarative_base()
 
     @classmethod
