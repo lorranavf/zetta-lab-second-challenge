@@ -1,3 +1,40 @@
+# Implementado
+```mermaid
+sequenceDiagram
+    actor Client
+    participant Nginx
+    participant Backend
+    participant Postgres
+
+    note over Client: API Request Flow
+    rect rgb(240, 240, 240)
+        Client->>Nginx: HTTP Request
+        Nginx->>Backend: Proxy Pass to FastAPI
+        critical Autenticação
+            Backend->>Backend: JWT / Session Validation
+        end
+        Backend->>Nginx: API Response (JSON)
+        Nginx->>Client: HTTP Response
+    end
+
+    note over Backend: Read Operation
+    rect rgb(230, 245, 255)
+        Nginx->>Backend: GET Request
+        Backend->>Postgres: SELECT query
+        Postgres->>Backend: Result Set
+        Backend->>Nginx: 200 OK + Payload
+    end
+
+    note over Backend: Write Operation
+    rect rgb(255, 240, 240)
+        Nginx->>Backend: POST/PUT/DELETE Request
+        Backend->>Postgres: INSERT/UPDATE/DELETE
+        Postgres->>Backend: Transaction OK
+        Backend->>Nginx: 201 Created / 204 No Content
+    end
+```
+
+# A implementar
 ```mermaid
 sequenceDiagram
     actor Client
@@ -8,10 +45,10 @@ sequenceDiagram
     participant Postgres
 
     %% User Request (Summary)
-    
+
     note over Client: User Request
-    alt  
-    Client->>Nginx: HTTP request 
+    alt
+    Client->>Nginx: HTTP request
     Nginx->>Frontend: Asset Request
     Nginx->>Backend: API Request
     critical
@@ -27,7 +64,7 @@ sequenceDiagram
     alt
     note over Backend: Cache Hit
     alt
-    
+
     Nginx->>Backend: GET Request
     critical
     Backend->>Backend: Authentication
@@ -59,7 +96,7 @@ sequenceDiagram
     Backend->>Postgres: INSERT/UPDATE/DELETE
     Postgres->>Backend: OK
     Backend->>Redis: DEL cache:resource:{id} or SET cache:resource:{id} TTL 60s
-    Backend->>Nginx: 201    
+    Backend->>Nginx: 201
     end
     end
 

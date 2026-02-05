@@ -1,50 +1,122 @@
-from fastapi import APIRouter, Depends, status, HTTPException 
-
-from sqlalchemy.orm import Session
-
 import uuid as uid
 
-import crud, schemas
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
 
-from clients.database import PostgresClient
-
+from app import crud, schemas
+from app.clients.database import PostgresClient
+from app.core.project import ProjectStatus
+from app.services.authentication import AuthenticationService as AuthService
 
 router = APIRouter()
 
 
-@router.get("/users", response_model=list[schemas.UserRead], status_code=status.HTTP_200_OK)
-async def list_users(db: Session = Depends(PostgresClient.db)):
-    users = crud.list_users(db)
-    return users
-
-@router.post("/users", response_model=schemas.UserRead, status_code=status.HTTP_201_CREATED)
-async def create_user(user: schemas.UserCreate, db: Session = Depends(PostgresClient.db)):
-    new_user = crud.create_user(db, user)
+@router.post(
+    "/users", response_model=schemas.UserRead, status_code=status.HTTP_201_CREATED
+)
+async def create_user(
+    user: schemas.UserCreate,
+    db: Session = Depends(PostgresClient.db),
+    current_user: schemas.UserRead | None = Depends(
+        AuthService.get_current_user_optional
+    ),
+):
+    if current_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Authenticated users cannot create new users.",
+        )
+    new_user = crud.user.create(db, user)
     return new_user
 
-@router.get("/users/{user_id}", response_model=schemas.UserRead, status_code=status.HTTP_200_OK)
-async def read_user(user_id: uid.UUID, db: Session = Depends(PostgresClient.db)):
-    user = crud.read_user(db, user_id)
+
+@router.get(
+    "/users", response_model=schemas.UserPagination, status_code=status.HTTP_200_OK
+)
+async def list_users(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(PostgresClient.db),
+    current_user: schemas.UserRead = Depends(AuthService.get_current_user),
+):
+    users = crud.user.list(db, skip=skip, limit=limit, current_user=current_user)
+    count = crud.user.count(db, current_user=current_user)
+    return {"total": count, "items": users}
+
+
+@router.get(
+    "/users/{user_id}", response_model=schemas.UserRead, status_code=status.HTTP_200_OK
+)
+async def read_user(
+    user_id: uid.UUID,
+    db: Session = Depends(PostgresClient.db),
+    current_user: schemas.UserRead = Depends(AuthService.get_current_user),
+):
+    user = crud.user.read(db, user_id, current_user=current_user)
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
     return user
 
-@router.put("/users/{user_id}", response_model=schemas.UserRead, status_code=status.HTTP_200_OK)
-async def update_user(user_id: uid.UUID, user_update: schemas.UserUpdate, db: Session = Depends(PostgresClient.db)):
-    user = crud.update_user(db, user_id, user_update)
+
+@router.put(
+    "/users/{user_id}", response_model=schemas.UserRead, status_code=status.HTTP_200_OK
+)
+async def update_user(
+    user_id: uid.UUID,
+    user_update: schemas.UserUpdate,
+    db: Session = Depends(PostgresClient.db),
+    current_user: schemas.UserRead = Depends(AuthService.get_current_user),
+):
+    user = crud.user.update(db, user_id, user_update, current_user=current_user)
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
     return user
+
 
 @router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_user(user_id: uid.UUID, db: Session = Depends(PostgresClient.db)):
-    success = crud.delete_user(db, user_id)
+async def delete_user(
+    user_id: uid.UUID,
+    db: Session = Depends(PostgresClient.db),
+    current_user: schemas.UserRead = Depends(AuthService.get_current_user),
+):
+    success = crud.user.delete(db, user_id, current_user=current_user)
     if not success:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
     return None
 
 
-@router.get("/users/{user_id}/projects", response_model=list[schemas.ProjectRead], status_code=status.HTTP_200_OK)
-async def list_projects_by_user_id(user_id: uid.UUID, db: Session = Depends(PostgresClient.db)):
-    projects = crud.list_projects_by_user_id(db, user_id)
-    return projects
+@router.get(
+    "/users/{user_id}/projects",
+    response_model=schemas.ProjectPagination,
+    status_code=status.HTTP_200_OK,
+)
+async def list_projects_by_user_id(
+    user_id: uid.UUID,
+    skip: int = 0,
+    limit: int = 100,
+    status: ProjectStatus | None = None,
+    db: Session = Depends(PostgresClient.db),
+    current_user: schemas.UserRead = Depends(AuthService.get_current_user),
+):
+    filters = {
+        "status": status,
+    }
+    projects = crud.project.list_by_foreign_key(
+        db,
+        "user_id",
+        user_id,
+        skip=skip,
+        limit=limit,
+        current_user=current_user,
+        **filters,
+    )
+    count = crud.project.count_by_foreign_key(
+        db, "user_id", user_id, current_user=current_user, **filters
+    )
+    return {"total": count, "items": projects}

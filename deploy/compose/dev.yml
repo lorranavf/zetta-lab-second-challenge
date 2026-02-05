@@ -2,10 +2,10 @@ services:
   app:
     container_name: bee-app
     build:
-      context: ../dockerfile/fastapi
-      dockerfile: Dockerfile
+      context: ../../
+      dockerfile: deploy/dockerfile/fastapi/Dockerfile
     volumes:
-      - ../../codebase/app:/app
+      - ../../codebase/app:/app/app
     env_file:
       - ../variables/reference
     depends_on:
@@ -16,11 +16,18 @@ services:
     links:
       - postgres
     restart: unless-stopped
+    command: >
+      uvicorn app.app:app
+      --host 0.0.0.0
+      --port 5000
+      --reload
+      --reload-dir /app/app
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      test: ["CMD-SHELL", "curl -f http://localhost:5000/ || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 3
+      start_period: 15s
 
   postgres:
     container_name: bee-postgres
@@ -48,7 +55,8 @@ services:
         ]
       interval: 10s
       timeout: 5s
-      retries: 3
+      retries: 5
+      start_period: 15s
     networks:
       - bee
 

@@ -1,0 +1,44 @@
+services:
+  db-tests:
+    container_name: db-tests
+    restart: unless-stopped
+    build:
+      context: ../dockerfile/postgres
+      dockerfile: Dockerfile
+    networks:
+      - test-network
+    volumes:
+      - ../dockerfile/postgres/init-test.sql:/docker-entrypoint-initdb.d/init.sql
+      - db-test:/var/lib/postgresql/data
+    env_file:
+      - ../variables/test
+
+  app-tests:
+    container_name: app-tests
+    build:
+      context: ../../
+      dockerfile: deploy/dockerfile/fastapi/Dockerfile
+      args:
+        - INSTALL_TEST=true
+    volumes:
+      - ../../codebase/app:/app/app
+      - ../../codebase/tests:/app/tests
+    env_file:
+      - ../variables/test
+    depends_on:
+      - db-tests
+    networks:
+      - test-network
+    command: >
+      uv run --no-sync pytest
+      --cov=app
+      --cov-report=term-missing
+      --cov-report=markdown:/app/tests/tests_coverage.md
+      /app/tests/
+
+networks:
+  test-network:
+    driver: bridge
+
+volumes:
+  db-test:

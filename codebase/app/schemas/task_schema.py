@@ -1,47 +1,43 @@
-
 import uuid
-
 from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict
 
-from typing import Optional
+from .default import PaginatedResponse
 
 
 class TaskCreate(BaseModel):
-
     title: str
     description: str
     project_id: uuid.UUID
-    due_date: Optional[datetime] = None
+    due_date: datetime | None = None
 
 
 class TaskRead(BaseModel):
-
     id: uuid.UUID
+    title: str
+    description: str
+    status: str
+    created_at: datetime
+    completed_at: datetime | None = None
+    archived_at: datetime | None = None
+    due_date: datetime | None = None
+    project_id: uuid.UUID
 
     model_config = ConfigDict(from_attributes=True)
 
 
 class TaskUpdate(BaseModel):
-
-    title: Optional[str] = None
-    description: Optional[str] = None
-    status: Optional[str] = None
-    completed_at: Optional[datetime] = None
-    archived_at: Optional[datetime] = None
-    due_date: Optional[datetime] = None
-
-    model_config = ConfigDict(from_attributes=True)
-    
-
-class TaskDelete(BaseModel):
-
-    id: uuid.UUID
+    title: str | None = None
+    description: str | None = None
+    status: str | None = None
+    created_at: datetime | None = None
+    completed_at: datetime | None = None
+    archived_at: datetime | None = None
+    due_date: datetime | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
 
-
-
-
+class TaskPagination(PaginatedResponse[TaskRead]):
+    pass
