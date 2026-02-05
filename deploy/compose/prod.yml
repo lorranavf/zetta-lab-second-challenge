@@ -1,0 +1,80 @@
+services:
+  app:
+    container_name: bee-app
+    build:
+      context: ../../
+      dockerfile: deploy/dockerfile/fastapi/Dockerfile
+    volumes:
+      - ../../codebase/app:/app/app
+    env_file:
+      - ../variables/prod.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - bee-prod
+    links:
+      - postgres
+    restart: always
+    command: >
+      uvicorn app.app:app
+      --workers 4
+      --worker-class uvicorn.workers.UvicornWorker
+      --host 0.0.0.0
+      --port 5000
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5000/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  postgres:
+    container_name: bee-postgres
+    restart: always
+    build:
+      context: ../dockerfile/postgres
+      dockerfile: Dockerfile
+    volumes:
+      - ../dockerfile/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres:/var/lib/postgresql/data
+    env_file:
+      - ../variables/reference
+    command: ["postgres", "-c", "listen_addresses=*"]
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "pg_isready",
+          "-U",
+          "$${POSTGRES_USER}",
+          "-d",
+          "$${POSTGRES_DB}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - bee-prod
+
+  nginx:
+    container_name: bee-nginx
+    restart: always
+    build:
+      context: ../dockerfile/nginx
+      dockerfile: Dockerfile
+    ports:
+      - "8000:443"
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - bee-prod
+
+volumes:
+  postgres:
+
+networks:
+  bee-prod:
+    driver: bridge
